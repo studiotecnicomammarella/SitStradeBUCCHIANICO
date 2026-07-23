@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+    <head>
+	<script type="text/javascript" src="./resources/master/ol-ext-master/dist/jquery-1.11.0.min.js"></script>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes"> 
+
+<!-- .css random versioning -->		
+  <script>
+    $(document).ready(function() {
+      $('link[rel="stylesheet"]').each(function() {
+        var cssFile = $(this).attr('href');
+        var version = Math.random().toString(36).substring(7); // Genera una stringa casuale come versione
+        var updatedCssFile = cssFile + '?v=' + version;
+
+        // Sostituisce l'URL originale con l'URL contenente il parametro di versioning casuale
+        $(this).attr('href', updatedCssFile);
+      });
+    });
+  </script>	
+		<script type="text/javascript" src="./resources/master/openlayers-master/ol.js"></script>	
+		<link rel="stylesheet" href="./resources/master/openlayers-master/ol.css">
+
+		<link rel="stylesheet" href="./resources/master/ol-ext-master/dist/ol-ext.css"/>
+		<script type="text/javascript" src="./resources/master/ol-ext-master/dist/ol-ext.js"></script>	
+		<script src="./resources/master/ol-ext-master/dist/FontAwesome5Def.js"></script>
+		<link rel="stylesheet" type="text/css" href="./resources/master/font-awesome-master/js/fontawesome-all.css">
+		<link rel="stylesheet" href="./resources/master/ol-sidebar-master/css/ol-sidebar.css">
+		<script src="./resources/master/ol-sidebar-master/js/ol-sidebar.js"></script>
+
+		<script src="./resources/master/ol-street-view-master/dist/interact.min.js" data-no-source-map></script>
+		<script src="./resources/master/ol-street-view-master/dist/ol-street-view.js" data-no-source-map></script>	
+		<link rel="stylesheet" href="./resources/master/ol-street-view-master/dist/css/ol-street-view.css" />
+		<!--<link rel="stylesheet" href="./resources/fontawesome-all.min.css">-->
+        <!--<link rel="stylesheet" href="./resources/ol-layerswitcher.css">-->
+        <link rel="stylesheet" href="./resources/thanks_for_the_coffee.css">
+		<script src="./resources/thanks_for_the_coffee_expressions.js"></script>
+		<script src="./resources/master/proj4js-master/dist/proj4.js"></script>
+        <script src="./resources/functions.js"></script>
+        <!--<script src="./resources/ol-layerswitcher.js"></script>-->
+		<link href="./resources/master/ol-geocoder-master/dist/ol-geocoder.css" rel="stylesheet">
+        <script src="./resources/master/ol-geocoder-master/dist/ol-geocoder.js"></script>
+		<script src="./resources/master/idb-master/dist/index-min.js"></script>			
+		<script src="./resources/master/sldreader-master/dist/sldreader.js"></script>		
+
+		<link rel="stylesheet" href="./resources/o.gis/o.gis_style.css">
+  <!-- layerswitcher and legend attribution -->
+	<style>
+		.ol-layerswitcher.ol-forceopen .panel-container {
+			width: 350px;
+		}				
+		.ol-touch .panel-container {
+			width: 240px!important;
+		}
+		.legend-attribution ul { 
+			width: 332px;
+		}
+	</style>
+		<!--
+        <link rel="stylesheet" href="./resources/ol.css">
+        <link rel="stylesheet" href="resources/fontawesome-all.min.css">
+		-->
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title>Portale della Toponomastica del Comune di BUCCHIANICO</title>
+    </head>
+    <body>
+<!-- map -->
+        <div id="map" style="position: relative;">
+            <div id="popup" class="ol-popup">
+                <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                <div id="popup-content"></div>
+            </div>
+
+			<!--form logo -->
+			<div id="form_logo" style="position:absolute; z-index:1">
+			<label><a href="./index.html"><img src="./resources/stemma.png" align="left" height="60" title='Reset map'></img></a></label>
+			<h1 align="center">Portale della Toponomastica del Comune di BUCCHIANICO</h1>
+			</div>
+			<!-- form query wms wfs -->	  
+			<form id="form_querywmswfs" style="display: none;">
+				<label><b>Query WMS layers only</b><br /><a>Turn on the WMS layers, click on the map and wait for the result. The response varies based on the speed of the external server.</a></label>
+			</form>	
+			<!-- form popup all -->	  
+			<form id="form_popupall" style="display: none">
+				<label><b>Query with the unified popup</b></label>
+			</form>
+
+			<!-- print button  		
+				<div id="print" class="print print-hover" style="position:absolute; z-index:1">
+				<button onClick="window.print()" class="fa fa-print"></button>
+				</div> -->
+			<!--form o.gis -->
+			<div id="form_opengis" style="position:absolute; z-index:1">
+			<a href="https://www.comune.bucchianico.ch.it/" target="_blank"><label><img src="./resources/o.gis.png" title="www.comune.bucchianico.ch.it"></img></label></a>
+			</div>
+			<!-- ol-sidebar start --> 
+			  <div id="sidebar" class="sidebar collapsed">
+					<!-- Nav tabs -->
+					<div class="sidebar-tabs">
+						<ul role="tablist">
+							<li><a href="#tab1" title="TAB 1" role="tab"><i class="fa fa-bars"></i></a></li>
+						</ul>
+						<ul role="tablist">
+							<li class="disabled"><a href="#gear" role="tab"><i class="fa fa-gear"></i></a></li>
+							<li class="disabled"><a href="#messages" role="tab"><i class="fa fa-envelope"></i></a></li>
+							<li class="disabled"><a href="#profile" role="tab"><i class="fa fa-user"></i></a></li>
+							<li class="disabled"><a href="#share" title="Share" role="tab"><i class="fa fa-share-alt"></i></a></li>
+							<li><a href="#download" title="Download" role="tab"><i class="fa fa-download"></i></a></li>
+							<li onClick="window.print()"><a title="Print" role="tab"><i class="fa fa-print"></i></a></li>
+							<li><a href="#info" title="Info" role="tab"><i class="fa fa-info"></i></a></li>
+						</ul>
+					</div>
+
+					<!-- Tab panes -->
+					<div class="sidebar-content">
+						<div class="sidebar-pane" id="tab1">
+							<h1 class="sidebar-header">
+								Portale Toponomastica BUCCHIANICO
+								<span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
+							</h1>
+							<iframe frameborder="0" scrolling="auto" 
+							style="height:90%; width:99%; position: absolute; top: 50px; left: 0; bottom: 0; right: 0; " 
+							src="./resources/html_sidebar_content/01_SIT.htm"></iframe>
+						</div>
+						<div class="sidebar-pane" id="download">
+							<h1 class="sidebar-header">
+							Download
+							<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+							<iframe frameborder="0" scrolling="auto" 
+							style="height:90%; width:99%; position: absolute; top: 50px; left: 0; bottom: 0; right: 0; " 
+							src="./resources/html_sidebar_content/05_GEOPACKAGE.htm"></iframe>
+
+						</div>
+						<div class="sidebar-pane" id="info">
+							<h1 class="sidebar-header">
+							Info
+							<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+							<iframe frameborder="0" scrolling="auto" 
+							style="height:90%; width:99%; position: absolute; top: 50px; left: 0; bottom: 0; right: 0; " 
+							src="./resources/html_sidebar_content/06_INFO.htm"></iframe>
+
+						</div>
+				</div> <!-- sidebar content end -->
+			</div> <!-- sidebar collapsed end -->  <!-- ol-sidebar end -->			
+        </div> <!-- map end --> 
+        <!--
+        <script src="resources/thanks_for_the_coffee_expressions.js"></script>
+<script src="resources/proj4.js"></script>
+		-->
+        <script>proj4.defs('EPSG:6708','+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');</script>
+        <!--
+		<script src="resources/polyfills.js"></script>
+        <script src="./resources/functions.js"></script>
+        <script src="./resources/ol.js"></script>
+        <script src="./resources/ol-layerswitcher.js"></script>
+		-->
+		<script src="layers/Acque.js"></script><script src="layers/Strade.js"></script><script src="layers/Particelle.js"></script><script src="layers/Fabbricati.js"></script><script src="layers/NumeriParticelle.js"></script><script src="layers/CIVICI.js"></script><script src="layers/SEZIONIDICENSIMENTOISTAT.js"></script><script src="layers/RELITTIESTRADERURALIDIPROGETTO.js"></script><script src="layers/CONTRADEDIPROGETTO.js"></script><script src="layers/CENTROSTORICODIPROGETTO.js"></script><script src="layers/RELITTIESTRADERURALI.js"></script><script src="layers/CONTRADE.js"></script><script src="layers/CENTROSTORICO.js"></script><script src="layers/FogliCatastali.js"></script><script src="layers/CONFINECOMUNALE.js"></script><script src="layers/CONFINIISTAT.js"></script>
+        <script src="styles/Acque_style.js"></script><script src="styles/Strade_style.js"></script><script src="styles/Particelle_style.js"></script><script src="styles/Fabbricati_style.js"></script><script src="styles/NumeriParticelle_style.js"></script><script src="styles/CIVICI_style.js"></script><script src="styles/SEZIONIDICENSIMENTOISTAT_style.js"></script><script src="styles/RELITTIESTRADERURALIDIPROGETTO_style.js"></script><script src="styles/CONTRADEDIPROGETTO_style.js"></script><script src="styles/CENTROSTORICODIPROGETTO_style.js"></script><script src="styles/RELITTIESTRADERURALI_style.js"></script><script src="styles/CONTRADE_style.js"></script><script src="styles/CENTROSTORICO_style.js"></script><script src="styles/FogliCatastali_style.js"></script><script src="styles/CONFINECOMUNALE_style.js"></script><script src="styles/CONFINIISTAT_style.js"></script>
+		<!--
+        <script src="./layers/layers.js" type="text/javascript"></script> 
+		-->
+<!-- layers definition -->
+		<script src="./layers/layers.js" type="text/javascript"></script>
+
+<!-- thanks_for_the_coffee.js and o.gis.js-->	  	
+		<script src="./resources/Autolinker.min.js" data-no-source-map></script>
+		<script src="./resources/thanks_for_the_coffee.js"></script>
+		<script src="./resources/o.gis/o.gis.js"></script>	  
+ <!-- Geocoder search language -->
+<script>
+	geocoder.options.lang = 'en-US';   // it-IT, pt-BR, fr-FR
+</script> 
+
+<!-- bookmark 	
+<script> 
+		bm.setBookmarks({
+			Quartiere_1: {pos:ol.proj.transform([2351142,4842857], 'EPSG:3004', 'EPSG:25832'), zoom:15},
+			Quartiere_2: {pos:ol.proj.transform([2352404,4841605], 'EPSG:3004', 'EPSG:25832'), zoom:15},
+			Quartiere_3: {pos:ol.proj.transform([2355410,4838774], 'EPSG:3004', 'EPSG:25832'), zoom:15},
+			Quartiere_4: {pos:ol.proj.transform([2357220,4839534], 'EPSG:3004', 'EPSG:25832'), zoom:15},
+			});
+		map.addControl(bm);	  			  
+</script> -->
+
+<!-- search feature -->
+
+      <script>
+        function searchFeatures() {          
+            // Insert combo box for source choice
+            var selectElt = document.createElement('select');
+            var buttonElt = search.element.querySelector('button');
+            search.element.insertBefore(selectElt, buttonElt);
+
+            // Sorgente "virtuale" che unisce i risultati di più layer:
+            // così una singola voce del menu (es. DENOMINAZIONE ATTUALE)
+            // cerca tra tutti i layer che hanno quel campo.
+            function mergedSource(layers) {
+              return {
+                getFeatures: function () {
+                  var a = [];
+                  layers.forEach(function (l) { a = a.concat(l.getSource().getFeatures()); });
+                  return a;
+                }
+              };
+            }
+
+            // Una voce di menu per ciascuna denominazione, con l'elenco
+            // dei layer da unire nella ricerca. 'Text' è stato rimosso.
+            var searchGroups = {
+              'DENOMINAZIONE ATTUALE': {
+                property: 'DENOMINAZIONE ATTUALE',
+                layers: [lyr_CENTROSTORICO, lyr_CONTRADE, lyr_RELITTIESTRADERURALI]
+              },
+              'DENOMINAZIONE DI PROGETTO': {
+                property: 'DENOMINAZIONE DI PROGETTO',
+                layers: [lyr_CENTROSTORICO, lyr_CENTROSTORICODIPROGETTO, lyr_CONTRADE, lyr_CONTRADEDIPROGETTO, lyr_RELITTIESTRADERURALI, lyr_RELITTIESTRADERURALIDIPROGETTO]
+              },
+              'INDIRIZZO': {
+                property: 'INDIRIZZO',
+                layers: [lyr_CIVICI]
+              },
+              'CATASTO': {
+                property: 'CATASTO',
+                layers: [lyr_Particelle]
+              },
+              'CODICE': {
+                property: 'CODICE',
+                layers: [lyr_CENTROSTORICODIPROGETTO, lyr_CONTRADEDIPROGETTO, lyr_RELITTIESTRADERURALIDIPROGETTO]
+              }
+            };
+
+            // Popola il menu con una sola voce per ogni denominazione
+            Object.keys(searchGroups).forEach(function (l) {
+              ol.ext.element.create('OPTION', {
+                text: l,
+                parent: selectElt
+              });
+            });
+
+            // Per ogni voce selezionata imposta la ricerca sulla sorgente unita
+            function handleComboBoxChange() {
+              search.clearHistory();
+              search.setInput('');
+              isManualSearch = true;
+
+              var group = searchGroups[selectElt.value];
+              if (!group) return;
+
+              search.setSource(mergedSource(group.layers));
+              search.set('property', group.property);
+              search.set('placeholder', 'Find ' + group.property + ' ...');
+              if (isManualSearch) {
+                  search.on('select', function (e) {
+                    group.layers.forEach(function (l) { l.setVisible(true); }); //show layers when search
+                  });
+              }
+
+              // Reset del placeholder nella barra di ricerca
+              var inputField = search.element.querySelector('.ol-search input');
+              inputField.placeholder = search.get('placeholder');
+              // Reset lista risultati dopo cambio combo
+              search.drawList_();
+            }
+            handleComboBoxChange();
+            // Lista i risultati all'avvio
+            search.drawList_ = function(auto) {
+                if (!auto) {
+                    source = search.getSource()
+                    // Get all features
+                    auto = source instanceof ol.source.Cluster ? source.getSource().getFeatures() : source.getFeatures();
+                }			
+                // Sort result 
+                auto = auto.slice().sort(function(f1, f2) {
+                    if (search.getSearchString(f1) < search.getSearchString(f2)) return -1;
+                    if (search.getSearchString(f1) > search.getSearchString(f2)) return 1;
+                    return 0;
+                  });
+                // Call the default behavior
+                ol.control.SearchFeature.prototype.drawList_.call(search, auto)
+                // Clear list from 'undefined' values and empty elements from Source
+                $('.ol-search > ul > li[data-search]').filter(function() {
+                    const text = $(this).text().trim();
+                    return text === 'undefined' || text === '';
+                }).remove();
+            }
+
+            // Change event
+            selectElt.addEventListener('change', function() {
+              handleComboBoxChange(); 
+            });	
+        }
+        if (window.layersLoadedFlag) {
+            searchFeatures();
+        } else {
+            document.addEventListener('layersLoaded', searchFeatures);
+        }
+</script>
+
+<!-- search feature 
+<script>
+		function searchFeatures() {
+			// Insert combo box for source choice
+			var selectElt = document.createElement('select');
+			var buttonElt = search.element.querySelector('button');
+			search.element.insertBefore(selectElt, buttonElt);
+			//// Example: Collection to merge multiple sources
+			//class sourceCollection extends ol.source.Vector {
+			//	constructor(opt) {
+			//		opt = opt || {};
+			//		super(opt);
+			//		this._sources = opt.sources;
+			//	}
+			//	getFeatures() {
+			//		var a = [];
+			//		this._sources.forEach(s => a = a.concat(s.getFeatures()));
+			//		return a;
+			//	}
+			//}
+			//// Define all source layers
+			//const combinedSource = new sourceCollection({
+			//	sources: [lyr_Option1.getSource(), lyr_Option2.getSource(), lyr_Option3.getSource()]
+			//});
+
+			// Set options to search in different source, one at a time
+			['Option_1', 'Option_2'].forEach(function (l) {
+			  ol.ext.element.create('OPTION', {
+				text: l,
+				parent: selectElt
+			  });
+			});
+			// For each option set data to perform the search
+			function handleComboBoxChange() {
+			  search.clearHistory();
+			  search.setInput('');
+			  isManualSearch = true;
+
+			  if (selectElt.value === 'Option_1') {
+				search.setSource(lyr_Option1.getSource());
+				search.set('property', 'FieldName');
+				search.set('placeholder', 'Find (es: F17 P44) ...');
+				if (isManualSearch) {
+					search.on('select', function(e) { lyr_Option1.setVisible(true); }); //show layer when search
+				}
+				//// Example: search in a field but the list reports a sum of values ​​from the feature
+				//search.getTitle = function(f) {
+				//	var title = 'F' + f.get('FOGLIO') + ' ' + 'P' + f.get('PARTICELLA');
+				//	return title;
+				//};				
+			  } 
+			  if (selectElt.value === 'Option_2') {
+				search.setSource(lyr_Option2.getSource());
+				search.set('property', 'FieldName');
+				search.set('placeholder', 'Find Cod (es: F-05-0123)');
+				if (isManualSearch) {
+					search.on('select', function(e) { lyr_Option2.setVisible(true); }); //show layer when search
+				}
+			  }
+			  // Reset del placeholder nella barra di ricerca
+			  var inputField = search.element.querySelector('.ol-search input');
+			  inputField.placeholder = search.get('placeholder');
+			  // Reset lista risultati dopo cambio combo
+			  search.drawList_();
+			}
+			handleComboBoxChange();
+			// Lista i risultati all'avvio
+			search.drawList_ = function(auto) {
+				if (!auto) {
+					source = search.getSource()
+					// Get all features
+					auto = source instanceof ol.source.Cluster ? source.getSource().getFeatures() : source.getFeatures();
+				}			
+				// Sort result 
+				auto = auto.slice().sort(function(f1, f2) {
+					if (search.getSearchString(f1) < search.getSearchString(f2)) return -1;
+					if (search.getSearchString(f1) > search.getSearchString(f2)) return 1;
+					return 0;
+				  });
+				// Call the default behavior
+				ol.control.SearchFeature.prototype.drawList_.call(search, auto)
+				// Clear list from 'undefined' values and empty elements from Source
+				$('.ol-search > ul > li[data-search]').filter(function() {
+					const text = $(this).text().trim();
+					return text === 'undefined' || text === '';
+				}).remove();
+			}
+
+			// Change event
+			selectElt.addEventListener('change', function() {
+			  handleComboBoxChange(); 
+			});	
+		}
+		if (window.layersLoadedFlag) {
+			searchFeatures();
+		} else {
+			document.addEventListener('layersLoaded', searchFeatures);
+		}
+</script> -->
+<!-- overview map -->		
+<script>
+			var MaxMapExtent = map.getView().getProperties().extent;
+			var ov = new ol.control.Overview({
+				layers: [ 
+					new ol.layer.Tile({
+					source: new ol.source.OSM()
+					}),
+				],
+
+				// google satellite example
+			/* 	layers: [ 
+					new ol.layer.Tile({
+					source: new ol.source.XYZ({
+						url: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'
+					})
+					}),
+				], */
+
+				// opentopo example
+			/* 	layers: [ 
+					new ol.layer.Tile({
+					source: new ol.source.XYZ({
+						url: 'https://tile.opentopomap.org/{z}/{x}/{y}.png'
+					})
+					}),
+				], */
+				//static image example, set also minZoom and maxZoom
+			/* 	layers: [ 
+					new ol.layer.Image({
+						source: new ol.source.ImageStatic({
+							url: './resources/minimap.png',
+							imageExtent: MaxMapExtent,
+						})
+					})
+				], */
+
+			  projection: currentProjection,
+			  //minZoom: '10.5',
+			  //maxZoom: '12',
+			  rotation: true,
+			  align: 'bottom-left',
+			  //panAnimation: "elastic" 
+			});
+			map.addControl(ov);	
+			// Select button
+			var overviewbuttontitle = $('div.ol-overview button');
+			// Set button title
+			overviewbuttontitle.attr('title', 'Minimap');			
+</script>
+<!-- scale line
+<script>
+		scaleLine.setUnits('imperial')
+</script> -->
+<!-- mouse position coordinates 
+<script>
+		currentProjection = 'EPSG:3857'
+		mousePositionDefault.setProjection(ol.proj.get(currentProjection));
+</script> -->
+
+<!-- streetview api key -->
+<script>
+	streetViewOptions.apiKey = ''; //define your own apikey to remove "for development purposes only"
+	streetView = new StreetView(streetViewOptions);
+	map.addControl(streetView);
+	streetView.on('streetViewInit', function () {				
+		if (typeof streetViewOptions.apiKey === 'undefined' || streetViewOptions.apiKey === '') {
+		  $('#ol-street-view--panorama').css('filter', 'invert(1)');
+		}
+	});
+</script>
+<!-- attribution 
+<script>	
+	// Define your own static attribution
+	attributionList.innerHTML = `<a>Data Source: </a>`;
+</script> -->
+<!-- remove control
+<script>
+	// map.removeControl(geocoder);				// remove address search
+	// map.removeControl(geoloc);				// remove gps loc
+	// map.removeControl(querywmswfs);			// remove query wms
+	// map.removeControl(popupall);				// remove popup all
+	// map.removeControl(bar);					// remove design bar
+	// map.removeControl(search); 				// remove quick search
+	// map.removeControl(ov);					// remove minimap
+	// map.removeControl(scaleCtrl);			// remove scale control
+	// map.removeControl(mousePositionDefault); // remove mouse position
+	// map.removeControl(printControl);			// remove print
+</script>
+
+<style>
+	/* remove zoom */
+		/* .ol-zoom {display: none!important;} */
+	/* remove measure */
+		/* .measure-control {display: none!important;} */
+	/* remove scale line */
+		/* .ol-scale-line {display: none!important;} */
+	/* remove permalink */
+		/* .ol-permalink {display: none!important;} */
+	/* remove rotate */
+		/* .ol-rotate {display: none!important;} */
+	/* remove full screen */
+		/* .expand {display: none!important;} */
+	/* remove legend */
+		/* .legend-attribution {display: none!important;} */
+	/* remove layers opacity */
+		/* .layerswitcher-opacity, .layerswitcher-opacity-label {
+		  display: none!important;
+		} */
+	/* remove layers extent */
+		/* .layerExtent {display: none!important;} */
+	/* remove layers move */
+		/* .layerup {display: none!important;} */
+	/* remove street view */
+		/* #ol-street-view--pegman-button-div {display: none!important;}*/
+</style>
+-->
+    </body>
+</html>
